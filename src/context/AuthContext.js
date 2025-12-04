@@ -26,7 +26,7 @@ export const AuthProvider = ({ children }) => {
 
       try {
         const res = await authAPI.me();
-        setUser(res.data.user); // Fixed: should be res.data.user, not res.data
+        setUser(res.data.user); 
       } catch (err) {
         console.error('Failed to validate token:', err);
         localStorage.removeItem('token');
