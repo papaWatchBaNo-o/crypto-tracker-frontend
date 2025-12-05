@@ -1,30 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { cryptoAPI } from '../../services/api';
+import { useState } from 'react';
+import { useCrypto } from '../../context/CryptoContext';
 import CryptoCard from './CryptoCard';
 
 const CryptoList = () => {
-  const [cryptos, setCryptos] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const { allCryptos, loading, error, refresh } = useCrypto();
   const [searchTerm, setSearchTerm] = useState('');
 
-  useEffect(() => {
-    fetchCryptos();
-  }, []);
-
-  const fetchCryptos = async () => {
-    try {
-      const response = await cryptoAPI.getTopCryptos();
-      setCryptos(response.data);
-      setError('');
-    } catch (error) {
-      setError('Failed to fetch cryptocurrency data');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const filteredCryptos = cryptos.filter(crypto =>
+  // for the search functionality
+  const filteredCryptos = allCryptos.filter(crypto =>
     crypto.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     crypto.symbol.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -41,7 +24,7 @@ const CryptoList = () => {
     return (
       <div style={styles.error}>
         <p>{error}</p>
-        <button onClick={fetchCryptos} style={styles.retryBtn}>
+        <button onClick={refresh} style={styles.retryBtn}>
           Retry
         </button>
       </div>
@@ -60,7 +43,7 @@ const CryptoList = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
             style={styles.searchInput}
           />
-          <button onClick={fetchCryptos} style={styles.refreshBtn}>
+          <button onClick={refresh} style={styles.refreshBtn}>
             Refresh
           </button>
         </div>

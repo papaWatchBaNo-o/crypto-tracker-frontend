@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { CryptoProvider } from './context/CryptoContext';
 import Layout from './components/Layout/Layout';
 import Login from './components/Auth/Login';
 import Register from './components/Auth/Register';
@@ -58,7 +59,9 @@ const AppContent = () => {
 function App() {
   return (
     <AuthProvider>
-      <AppContent />
+      <CryptoProvider>
+        <AppContent />
+      </CryptoProvider>
     </AuthProvider>
   );
 }
@@ -106,5 +109,14 @@ const styles = {
     top: '5.5rem',
   },
 };
+
+const styleSheet = document.createElement('style');
+styleSheet.textContent = `
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+`;
+document.head.appendChild(styleSheet);
 
 export default App;

@@ -1,34 +1,26 @@
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useCrypto } from '../../context/CryptoContext';
 import { cryptoAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 
 const Watchlist = () => {
-  const [watchlist, setWatchlist] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { allCryptos, loading: cryptoLoading } = useCrypto();
   const { isAuthenticated, user, removeFromLocalWatchlist } = useAuth();
+  const [localRefresh, setLocalRefresh] = useState(0);
+  
+  const watchlistCoins = allCryptos.filter(crypto =>
+    user?.watchlist?.some(w => w.coinId === crypto.id)
+  );
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      fetchWatchlist();
-    }
-  }, [isAuthenticated]);
-
-  const fetchWatchlist = async () => {
-    try {
-      const response = await cryptoAPI.getWatchlist();
-      setWatchlist(response.data);
-    } catch (error) {
-      console.error('Error fetching watchlist:', error);
-    } finally {
-      setLoading(false);
-    }
+  const triggerRefresh = () => {
+    setLocalRefresh(prev => prev + 1);
   };
 
   const removeFromWatchlist = async (coinId) => {
     try {
       await cryptoAPI.removeFromWatchlist(coinId);
-      setWatchlist(watchlist.filter(coin => coin.id !== coinId));
       removeFromLocalWatchlist(coinId);
+      triggerRefresh();
     } catch (error) {
       console.error('Error removing from watchlist:', error);
     }
@@ -43,11 +35,11 @@ const Watchlist = () => {
     );
   }
 
-  if (loading) {
+  if (cryptoLoading) {
     return (
       <div style={styles.container}>
         <h3>⭐ Watchlist</h3>
-        <p>Loading your watchlist...</p>
+        <p>Loading cryptocurrency data...</p>
       </div>
     );
   }
@@ -56,10 +48,10 @@ const Watchlist = () => {
     <div style={styles.container}>
       <header style={styles.header}>
         <h3>⭐ Your Watchlist</h3>
-        <span style={styles.count}>{watchlist.length} coins</span>
+        <span style={styles.count}>{watchlistCoins.length} coins</span>
       </header>
 
-      {watchlist.length === 0 ? (
+      {watchlistCoins.length === 0 ? (
         <div style={styles.empty}>
           <p>Your watchlist is empty</p>
           <p style={styles.emptySubtext}>
@@ -68,7 +60,7 @@ const Watchlist = () => {
         </div>
       ) : (
         <main style={styles.watchlist}>
-          {watchlist.map((coin) => (
+          {watchlistCoins.map((coin) => (
             <div key={coin.id} style={styles.watchlistItem}>
               <div style={styles.coinHeader}>
                 <img 
@@ -86,13 +78,15 @@ const Watchlist = () => {
               
               <div style={styles.coinPrice}>
                 <div style={styles.currentPrice}>
-                  ${coin.current_price.toLocaleString()}
+                  {coin.formattedPrice || `$${coin.current_price?.toLocaleString() || '--'}`}
                 </div>
                 <div style={{
                   ...styles.priceChange,
                   color: coin.price_change_percentage_24h >= 0 ? '#00d4aa' : '#ff4444'
                 }}>
-                  {coin.price_change_percentage_24h >= 0 ? '📈' : '📉'} {Math.abs(coin.price_change_percentage_24h).toFixed(2)}%
+                  {coin.priceChangeFormatted || 
+                    `${coin.price_change_percentage_24h >= 0 ? '📈' : '📉'} ${Math.abs(coin.price_change_percentage_24h || 0).toFixed(2)}%`
+                  }
                 </div>
               </div>
 
@@ -205,6 +199,11 @@ const styles = {
     fontSize: '1rem',
     padding: '0.25rem',
     borderRadius: '4px',
+    transition: 'all 0.2s ease',
+    ':hover': {
+      backgroundColor: 'rgba(255, 0, 0, 0.1)',
+      transform: 'scale(1.1)',
+    },
   },
 };
 

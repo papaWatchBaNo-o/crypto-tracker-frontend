@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { cryptoAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 
@@ -26,40 +26,54 @@ const CryptoCard = ({ crypto }) => {
       setIsInWatchlist(true);
       addToLocalWatchlist(crypto.id, crypto.name);
     } catch (error) {
-      alert('Failed to add to watchlist');
+      if (error.response?.status === 400) {
+        // if coin already in watchlist
+        setIsInWatchlist(true);
+      } else {
+        alert('Failed to add to watchlist');
+      }
     } finally {
       setLoading(false);
     }
   };
 
-  const priceChangeColor = crypto.price_change_percentage_24h >= 0 ? '#00d4aa' : '#ff4444';
-  const priceChangeIcon = crypto.price_change_percentage_24h >= 0 ? '📈' : '📉';
+  const priceChange = crypto.price_change_percentage_24h || 0;
+  const priceChangeColor = priceChange >= 0 ? '#00d4aa' : '#ff4444';
+  const priceChangeIcon = priceChange >= 0 ? '📈' : '📉';
+  const currentPrice = crypto.current_price ? `$${crypto.current_price.toLocaleString()}` : '$--';
+  const marketCap = crypto.market_cap ? `$${(crypto.market_cap / 1000000000).toFixed(2)}B` : '--';
+  const volume = crypto.total_volume ? `$${(crypto.total_volume / 1000000).toFixed(2)}M` : '--';
+  const rank = crypto.market_cap_rank ? `#${crypto.market_cap_rank}` : '#--';
 
   return (
     <div style={styles.card}>
       <div style={styles.cardHeader}>
         <div style={styles.coinInfo}>
           <img 
-            src={crypto.image} 
+            src={crypto.image || 'https://via.placeholder.com/40'} 
             alt={crypto.name}
             style={styles.coinImage}
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src = 'https://via.placeholder.com/40';
+            }}
           />
           <div>
-            <h3 style={styles.coinName}>{crypto.name}</h3>
-            <p style={styles.coinSymbol}>{crypto.symbol.toUpperCase()}</p>
+            <h3 style={styles.coinName}>{crypto.name || 'Unknown Coin'}</h3>
+            <p style={styles.coinSymbol}>{(crypto.symbol || '').toUpperCase()}</p>
           </div>
         </div>
         <div style={styles.rank}>
-          #{crypto.market_cap_rank}
+          {rank}
         </div>
       </div>
 
       <div style={styles.priceSection}>
         <div style={styles.currentPrice}>
-          ${crypto.current_price.toLocaleString()}
+          {currentPrice}
         </div>
         <div style={{ ...styles.priceChange, color: priceChangeColor }}>
-          {priceChangeIcon} {Math.abs(crypto.price_change_percentage_24h).toFixed(2)}%
+          {priceChangeIcon} {Math.abs(priceChange).toFixed(2)}%
         </div>
       </div>
 
@@ -67,13 +81,13 @@ const CryptoCard = ({ crypto }) => {
         <div style={styles.stat}>
           <span style={styles.statLabel}>Market Cap:</span>
           <span style={styles.statValue}>
-            ${(crypto.market_cap / 1000000000).toFixed(2)}B
+            {marketCap}
           </span>
         </div>
         <div style={styles.stat}>
           <span style={styles.statLabel}>24h Volume:</span>
           <span style={styles.statValue}>
-            ${(crypto.total_volume / 1000000).toFixed(2)}M
+            {volume}
           </span>
         </div>
       </div>
@@ -85,9 +99,10 @@ const CryptoCard = ({ crypto }) => {
           style={{
             ...styles.watchlistBtn,
             ...(isInWatchlist ? styles.watchlistBtnAdded : {}),
+            ...(loading ? styles.watchlistBtnLoading : {}),
           }}
         >
-          {isInWatchlist ? '✅ In Watchlist' : '⭐ Add to Watchlist'}
+          {loading ? 'Adding...' : isInWatchlist ? '✅ In Watchlist' : '⭐ Add to Watchlist'}
         </button>
       )}
     </div>
@@ -100,6 +115,11 @@ const styles = {
     borderRadius: '12px',
     padding: '1.5rem',
     border: '1px solid #333',
+    transition: 'transform 0.2s ease',
+    ':hover': {
+      transform: 'translateY(-2px)',
+      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+    },
   },
   cardHeader: {
     display: 'flex',
@@ -111,16 +131,23 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     gap: '0.75rem',
+    minWidth: 0, 
   },
   coinImage: {
     width: '40px',
     height: '40px',
     borderRadius: '50%',
+    objectFit: 'cover',
+    flexShrink: 0, 
   },
   coinName: {
     fontSize: '1.1rem',
     fontWeight: 'bold',
     marginBottom: '0.25rem',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    maxWidth: '150px',
   },
   coinSymbol: {
     color: '#888',
@@ -133,6 +160,7 @@ const styles = {
     borderRadius: '12px',
     fontSize: '0.8rem',
     fontWeight: 'bold',
+    flexShrink: 0, 
   },
   priceSection: {
     marginBottom: '1rem',
@@ -173,10 +201,24 @@ const styles = {
     cursor: 'pointer',
     fontSize: '0.9rem',
     fontWeight: 'bold',
+    transition: 'all 0.2s ease',
+    ':hover:not(:disabled)': {
+      backgroundColor: '#444',
+    },
+    ':disabled': {
+      cursor: 'not-allowed',
+      opacity: 0.7,
+    },
   },
   watchlistBtnAdded: {
     backgroundColor: '#00d4aa',
     color: 'black',
+    ':hover:not(:disabled)': {
+      backgroundColor: '#00c39a',
+    },
+  },
+  watchlistBtnLoading: {
+    backgroundColor: '#666',
   },
 };
 
