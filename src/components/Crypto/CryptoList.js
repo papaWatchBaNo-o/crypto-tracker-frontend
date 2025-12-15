@@ -34,7 +34,7 @@ const CryptoList = () => {
   return (
     <div>
       <header style={styles.header}>
-        <h2>Top Cryptocurrencies</h2>
+        <h2 style={styles.headerTitle}>Top Cryptocurrencies</h2>
         <div style={styles.controls}>
           <input
             type="text"
@@ -89,6 +89,19 @@ const styles = {
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: '1.5rem',
+    flexWrap: 'wrap',
+    gap: '1rem',
+    maxWidth: '100%',
+    overflowX: 'auto',
+    position: 'sticky',
+    top: 0,
+    backgroundColor: '#1a1a1a',
+    padding: '1rem 0',
+    zIndex: 500,
+  },
+  headerTitle: {
+    margin: 0,
+    paddingInline: '.5rem',
   },
   controls: {
     display: 'flex',

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { CryptoProvider } from './context/CryptoContext';
 import Layout from './components/Layout/Layout';
@@ -11,6 +11,18 @@ import './App.css';
 const AppContent = () => {
   const { isAuthenticated, loading } = useAuth();
   const [authView, setAuthView] = useState('login');
+  const [activeTab, setActiveTab] = useState('all'); 
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsMobile(window.innerWidth < 1024); 
+    };
+
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
 
   if (loading) {
     return (
@@ -42,15 +54,44 @@ const AppContent = () => {
           <h1>🚀 Crypto Tracker</h1>
           <p style={styles.subtitle}>Real-time cryptocurrency prices and tracking</p>
         </div>
-        
-        <div style={styles.content}>
-          <div style={styles.mainContent}>
-            <CryptoList />
+
+        {isMobile ? (
+          <div style={styles.mobileView}>
+            <div style={styles.tabContainer}>
+              <button
+                style={{
+                  ...styles.tabButton,
+                  ...(activeTab === 'all' ? styles.activeTab : {})
+                }}
+                onClick={() => setActiveTab('all')}
+              >
+                All Coins
+              </button>
+              <button
+                style={{
+                  ...styles.tabButton,
+                  ...(activeTab === 'watchlist' ? styles.activeTab : {})
+                }}
+                onClick={() => setActiveTab('watchlist')}
+              >
+                Watchlist
+              </button>
+            </div>
+            
+            <div style={styles.mobileContent}>
+              {activeTab === 'all' ? <CryptoList /> : <Watchlist />}
+            </div>
           </div>
-          <div style={styles.sidebar}>
-            <Watchlist />
+        ) : (
+          <div style={styles.content}>
+            <div style={styles.mainContent}>
+              <CryptoList />
+            </div>
+            <div style={styles.sidebar}>
+              <Watchlist />
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </Layout>
   );
@@ -95,6 +136,7 @@ const styles = {
     color: '#888',
     marginTop: '0.5rem',
   },
+
   content: {
     display: 'grid',
     gridTemplateColumns: '1fr 350px',
@@ -107,6 +149,40 @@ const styles = {
   sidebar: {
     position: 'sticky',
     top: '5.5rem',
+    height: 'calc(100vh - 7rem)',
+    overflowY: 'auto',
+  },
+
+  mobileView: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '1rem',
+  },
+  tabContainer: {
+    display: 'flex',
+    backgroundColor: '#1a1a1a',
+    borderRadius: '8px',
+    padding: '0.25rem',
+    marginBottom: '1rem',
+  },
+  tabButton: {
+    flex: 1,
+    padding: '0.75rem 1rem',
+    border: 'none',
+    backgroundColor: 'transparent',
+    color: '#888',
+    fontSize: '1rem',
+    fontWeight: '600',
+    cursor: 'pointer',
+    borderRadius: '6px',
+    transition: 'all 0.2s ease',
+  },
+  activeTab: {
+    backgroundColor: '#00d4aa',
+    color: '#0a0a0a',
+  },
+  mobileContent: {
+    minHeight: '60vh',
   },
 };
 

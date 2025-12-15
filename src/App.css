@@ -62,3 +62,9 @@ input {
   transform: translateY(-2px);
   border-color: #00d4aa !important;
 }
+
+@media (max-width: 600px) {
+  .logo-text {
+    display: none !important;
+  }
+}

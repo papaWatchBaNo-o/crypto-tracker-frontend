@@ -1,6 +1,9 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:5000/api';
+const isProduction = process.env.NODE_ENV === 'production';
+const API_BASE_URL = isProduction 
+  ? 'https://crytpto-tracker-api.onrender.com/api' 
+  : 'http://localhost:5000/api'; 
 
 const api = axios.create({
   baseURL: API_BASE_URL,

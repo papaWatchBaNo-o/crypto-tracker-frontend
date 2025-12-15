@@ -1,4 +1,5 @@
 import { useAuth } from '../../context/AuthContext';
+import '../../App.css';
 
 const Navbar = () => {
   const { user, logout, isAuthenticated } = useAuth();
@@ -6,7 +7,7 @@ const Navbar = () => {
   return (
     <nav style={styles.navbar}>
       <div style={styles.logo}>
-        <h2>🚀 Crypto Tracker</h2>
+        <h2>🚀 <span className="logo-text">Crypto Tracker</span></h2>
       </div>
       
       <div style={styles.navLinks}>
@@ -34,9 +35,6 @@ const styles = {
     backgroundColor: '#1a1a1a',
     color: 'white',
     borderBottom: '2px solid #333',
-    position: 'sticky',
-    top: 0,
-    zIndex: 1000,
   },
   logo: {
     fontSize: '1.5rem',
