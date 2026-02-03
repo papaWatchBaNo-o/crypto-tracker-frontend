@@ -27,7 +27,7 @@ const CryptoCard = ({ crypto }) => {
       addToLocalWatchlist(crypto.id, crypto.name);
     } catch (error) {
       if (error.response?.status === 400) {
-        // if coin already in watchlist
+        // if coin already in watchlistt
         setIsInWatchlist(true);
       } else {
         alert('Failed to add to watchlist');
