@@ -6,7 +6,7 @@ import { useAuth } from '../../context/AuthContext';
 const Watchlist = () => {
   const { allCryptos, loading: cryptoLoading } = useCrypto();
   const { isAuthenticated, user, removeFromLocalWatchlist } = useAuth();
-  const [localRefresh, setLocalRefresh] = useState(0);
+  const [, setLocalRefresh] = useState(0);
   
   const watchlistCoins = allCryptos.filter(crypto =>
     user?.watchlist?.some(w => w.coinId === crypto.id)
